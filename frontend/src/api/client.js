@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-const rawApiUrl = import.meta.env.VITE_API_URL;
-const BASE_URL = rawApiUrl
-  ? (rawApiUrl.includes('://') ? `${rawApiUrl}/api` : `https://${rawApiUrl}/api`)
-  : '/api';
-
-const client = axios.create({ baseURL: BASE_URL });
+// 프로덕션/개발 모두 상대 경로 사용 (백엔드가 프론트엔드를 함께 서빙)
+const client = axios.create({ baseURL: '/api' });
 
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
