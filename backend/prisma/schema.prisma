@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
+  password  String
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  notebooks Notebook[]
+  notes     Note[]
+  tags      Tag[]
+}
+
+model Notebook {
+  id        Int      @id @default(autoincrement())
+  name      String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     Note[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Note {
+  id         Int       @id @default(autoincrement())
+  title      String    @default("제목 없음")
+  content    String?   @db.Text
+  isPinned   Boolean   @default(false)
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notebookId Int?
+  notebook   Notebook? @relation(fields: [notebookId], references: [id], onDelete: SetNull)
+  tags       NoteTag[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Tag {
+  id        Int       @id @default(autoincrement())
+  name      String
+  color     String    @default("#6366f1")
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     NoteTag[]
+  createdAt DateTime  @default(now())
+
+  @@unique([name, userId])
+}
+
+model NoteTag {
+  noteId Int
+  tagId  Int
+  note   Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, tagId])
+}
