@@ -10,15 +10,21 @@ const tagsRoutes = require('./routes/tags');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL]
-  : ['http://localhost:5173', 'http://localhost:3000'];
+const getAllowedOrigins = () => {
+  if (process.env.FRONTEND_URL) {
+    const url = process.env.FRONTEND_URL;
+    // Render의 host 속성은 프로토콜 없이 hostname만 줄 수 있어서 양쪽 모두 허용
+    return url.includes('://') ? [url] : [`https://${url}`, `http://${url}`];
+  }
+  return ['http://localhost:5173', 'http://localhost:3000'];
+};
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
+    if (!origin || getAllowedOrigins().some(o => origin === o)) {
       callback(null, true);
     } else {
+      console.log(`CORS blocked: ${origin}, allowed: ${getAllowedOrigins()}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
